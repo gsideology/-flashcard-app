@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { db } from "../firebase/config";
 import { collection, addDoc } from "firebase/firestore";
+import { useAuth } from "../contexts/AuthContext";
 
-export default function CardForm({ deckId, userId = "test-user" }) {
+export default function CardForm({ deckId, userId }) {
+  const { currentUser } = useAuth();
+  const actualUserId = userId || currentUser.uid;
   const [front, setFront] = useState("");
   const [back, setBack] = useState("");
   const [loading, setLoading] = useState(false);
@@ -11,11 +14,14 @@ export default function CardForm({ deckId, userId = "test-user" }) {
     e.preventDefault();
     if (!front.trim() || !back.trim()) return;
     setLoading(true);
-    await addDoc(collection(db, "users", userId, "decks", deckId, "cards"), {
-      front: front.trim(),
-      back: back.trim(),
-      createdAt: new Date(),
-    });
+    await addDoc(
+      collection(db, "users", actualUserId, "decks", deckId, "cards"),
+      {
+        front: front.trim(),
+        back: back.trim(),
+        createdAt: new Date(),
+      }
+    );
     setFront("");
     setBack("");
     setLoading(false);

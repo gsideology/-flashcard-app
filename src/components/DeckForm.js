@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { db } from "../firebase/config";
 import { collection, addDoc } from "firebase/firestore";
-
-const TEST_USER_ID = "test-user";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function DeckForm() {
+  const { currentUser } = useAuth();
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -12,7 +12,7 @@ export default function DeckForm() {
     e.preventDefault();
     if (!name.trim()) return;
     setLoading(true);
-    await addDoc(collection(db, "users", TEST_USER_ID, "decks"), {
+    await addDoc(collection(db, "users", currentUser.uid, "decks"), {
       name: name.trim(),
       createdAt: new Date(),
     });

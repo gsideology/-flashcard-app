@@ -2,27 +2,27 @@ import React, { useEffect, useState } from "react";
 import { db } from "../firebase/config";
 import { collection, getDocs } from "firebase/firestore";
 import StudySession from "../components/StudySession";
-
-const TEST_USER_ID = "test-user";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function StudyPage() {
+  const { currentUser } = useAuth();
   const [decks, setDecks] = useState([]);
   const [selectedDeck, setSelectedDeck] = useState(null);
 
   useEffect(() => {
     async function fetchDecks() {
-      const decksRef = collection(db, "users", TEST_USER_ID, "decks");
+      const decksRef = collection(db, "users", currentUser.uid, "decks");
       const snapshot = await getDocs(decksRef);
       setDecks(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     }
     fetchDecks();
-  }, []);
+  }, [currentUser]);
 
   if (selectedDeck) {
     return (
       <StudySession
         deckId={selectedDeck.id}
-        userId={TEST_USER_ID}
+        userId={currentUser.uid}
         deckName={selectedDeck.name}
       />
     );

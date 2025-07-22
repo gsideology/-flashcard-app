@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { db } from "../firebase/config";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 import Deck from "./Deck";
-
-const TEST_USER_ID = "test-user";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function DeckList() {
+  const { currentUser } = useAuth();
   const [decks, setDecks] = useState([]);
   const [cardCounts, setCardCounts] = useState({});
   const [loading, setLoading] = useState(true);
@@ -13,7 +13,7 @@ export default function DeckList() {
   useEffect(() => {
     async function fetchDecks() {
       setLoading(true);
-      const decksRef = collection(db, "users", TEST_USER_ID, "decks");
+      const decksRef = collection(db, "users", currentUser.uid, "decks");
       const snapshot = await getDocs(decksRef);
       const decksData = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -26,7 +26,7 @@ export default function DeckList() {
         const cardsRef = collection(
           db,
           "users",
-          TEST_USER_ID,
+          currentUser.uid,
           "decks",
           deck.id,
           "cards"
@@ -38,10 +38,10 @@ export default function DeckList() {
       setLoading(false);
     }
     fetchDecks();
-  }, []);
+  }, [currentUser]);
 
   async function handleDelete(deckId) {
-    await deleteDoc(doc(db, "users", TEST_USER_ID, "decks", deckId));
+    await deleteDoc(doc(db, "users", currentUser.uid, "decks", deckId));
     setDecks((decks) => decks.filter((deck) => deck.id !== deckId));
   }
 
@@ -69,7 +69,7 @@ export default function DeckList() {
               Delete
             </button>
           </div>
-          <Deck deck={deck} userId={TEST_USER_ID} />
+          <Deck deck={deck} userId={currentUser.uid} />
         </li>
       ))}
       {decks.length === 0 && (

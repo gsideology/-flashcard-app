@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase/config";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { useAuth } from "../contexts/AuthContext";
 
-export default function CardList({ deckId, userId = "test-user" }) {
+export default function CardList({ deckId, userId }) {
+  const { currentUser } = useAuth();
+  const actualUserId = userId || currentUser.uid;
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -12,7 +15,7 @@ export default function CardList({ deckId, userId = "test-user" }) {
       const cardsRef = collection(
         db,
         "users",
-        userId,
+        actualUserId,
         "decks",
         deckId,
         "cards"
@@ -22,10 +25,12 @@ export default function CardList({ deckId, userId = "test-user" }) {
       setLoading(false);
     }
     fetchCards();
-  }, [deckId, userId]);
+  }, [deckId, actualUserId]);
 
   async function handleDelete(cardId) {
-    await deleteDoc(doc(db, "users", userId, "decks", deckId, "cards", cardId));
+    await deleteDoc(
+      doc(db, "users", actualUserId, "decks", deckId, "cards", cardId)
+    );
     setCards((cards) => cards.filter((card) => card.id !== cardId));
   }
 
